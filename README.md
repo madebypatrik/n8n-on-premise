@@ -40,8 +40,8 @@
 ### Setup (3 minutes)
 ```bash
 # 1. Download the code
-git clone https://github.com/madebypatrik/n8n-docker.git
-cd n8n-docker
+git clone https://github.com/madebypatrik/n8n-on-premise.git
+cd n8n-on-premise
 
 # 2. Run the setup script for first-time configuration and start
 ./setup.sh
@@ -64,7 +64,7 @@ The `setup.sh` script automates the following for a smooth first-time experience
 ## 📁 Project Structure
 
 ```
-n8n-docker/
+n8n-on-premise/
 ├── docker-compose.yml          # Main Docker Compose configuration
 ├── .env                       # Your environment variables (created by setup.sh)
 ├── scripts/
