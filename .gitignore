@@ -1,0 +1,51 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Docker volumes and data
+/data/
+/postgres-data/
+/n8n-data/
+
+# Backup files
+/backups/
+*.sql
+*.backup
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# SSL certificates
+*.pem
+*.crt
+*.key
+ssl/
+
+# Node modules (if any local development)
+node_modules/
+
+# Docker override files
+docker-compose.override.yml

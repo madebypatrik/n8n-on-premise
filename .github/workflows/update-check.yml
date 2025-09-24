@@ -1,0 +1,106 @@
+name: Check for n8n Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    name: Check for n8n Updates
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Get current n8n version from docker-compose
+      id: current-version
+      run: |
+        # Extract the image tag from docker-compose.yml
+        CURRENT_IMAGE=$(grep "image: n8nio/n8n" docker-compose.yml | awk '{print $2}')
+        echo "current-image=$CURRENT_IMAGE" >> $GITHUB_OUTPUT
+        
+    - name: Get latest n8n version
+      id: latest-version
+      run: |
+        # Get the latest version from Docker Hub API
+        LATEST_TAG=$(curl -s "https://registry.hub.docker.com/v2/repositories/n8nio/n8n/tags/" | \
+          jq -r '.results[] | select(.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' | \
+          sort -V | tail -1)
+        echo "latest-tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+        echo "Latest n8n version: $LATEST_TAG"
+        
+    - name: Compare versions
+      id: compare
+      run: |
+        CURRENT="${{ steps.current-version.outputs.current-image }}"
+        LATEST="n8nio/n8n:${{ steps.latest-version.outputs.latest-tag }}"
+        
+        echo "Current: $CURRENT"
+        echo "Latest: $LATEST"
+        
+        if [ "$CURRENT" != "$LATEST" ] && [ "$CURRENT" != "n8nio/n8n:latest" ]; then
+          echo "update-available=true" >> $GITHUB_OUTPUT
+          echo "🔄 Update available: $CURRENT → $LATEST"
+        else
+          echo "update-available=false" >> $GITHUB_OUTPUT
+          echo "✅ n8n is up to date"
+        fi
+        
+    - name: Create issue for update
+      if: steps.compare.outputs.update-available == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const title = `🔄 n8n Update Available: v${{ steps.latest-version.outputs.latest-tag }}`;
+          const body = `
+          ## n8n Update Available
+          
+          A new version of n8n is available!
+          
+          **Current version**: \`${{ steps.current-version.outputs.current-image }}\`
+          **Latest version**: \`n8nio/n8n:${{ steps.latest-version.outputs.latest-tag }}\`
+          
+          ### To update:
+          
+          1. Review the [n8n changelog](https://github.com/n8n-io/n8n/releases/tag/n8n@${{ steps.latest-version.outputs.latest-tag }})
+          2. Test the update in a development environment
+          3. Run the update script:
+             \`\`\`bash
+             ./scripts/update.sh
+             \`\`\`
+          
+          ### Manual update:
+          
+          1. Update \`docker-compose.yml\`:
+             \`\`\`yaml
+             image: n8nio/n8n:${{ steps.latest-version.outputs.latest-tag }}
+             \`\`\`
+          2. Run: \`docker compose pull && docker compose up -d\`
+          
+          ---
+          *This issue was automatically created by the update checker workflow.*
+          `;
+          
+          // Check if an issue already exists
+          const issues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: ['update-available'],
+            state: 'open'
+          });
+          
+          if (issues.data.length === 0) {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['update-available', 'enhancement']
+            });
+            console.log('✅ Created new update issue');
+          } else {
+            console.log('ℹ️ Update issue already exists');
+          }
