@@ -11,7 +11,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Function to print colored output
@@ -95,7 +94,7 @@ echo
 # Resource Usage
 print_header "Resource Usage"
 if docker compose ps -q | head -1 > /dev/null 2>&1; then
-    docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}" $(docker compose ps -q) 2>/dev/null || print_warning "Could not get resource statistics"
+    docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}" "$(docker compose ps -q)" 2>/dev/null || print_warning "Could not get resource statistics"
 else
     print_warning "No running containers found"
 fi

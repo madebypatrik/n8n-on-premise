@@ -104,10 +104,12 @@ declare -A prev_health
 
 # Function to check container status
 check_containers() {
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
     # Get container information
-    local containers=$(docker compose ps --format json 2>/dev/null | jq -r '.Name' 2>/dev/null || echo "")
+    local containers
+    containers=$(docker compose ps --format json 2>/dev/null | jq -r '.Name' 2>/dev/null || echo "")
     
     if [ -z "$containers" ]; then
         print_warning "No containers found"
@@ -121,8 +123,10 @@ check_containers() {
         [ -z "$container" ] && continue
         
         # Get current status and health
-        local status=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "unknown")
-        local health=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null || echo "no-healthcheck")
+        local status
+        status=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "unknown")
+        local health
+        health=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null || echo "no-healthcheck")
         
         # Check for status changes
         if [ "${prev_status[$container]}" != "$status" ]; then
@@ -179,14 +183,14 @@ check_containers() {
     
     # Show resource usage
     echo
-    printf "${BLUE}Resource Usage:${NC}\n"
+    printf "%sResource Usage:%s\n" "${BLUE}" "${NC}"
     docker stats --no-stream --format "  {{.Container}}: CPU {{.CPUPerc}}, Memory {{.MemUsage}} ({{.MemPerc}})" \
-        $(docker compose ps -q) 2>/dev/null | head -5 || echo "  Could not get resource stats"
+        "$(docker compose ps -q)" 2>/dev/null | head -5 || echo "  Could not get resource stats"
     
     # Show recent logs if requested
     if [ "$SHOW_LOGS" = true ]; then
         echo
-        printf "${BLUE}Recent Logs (last 3 lines):${NC}\n"
+        printf "%sRecent Logs (last 3 lines):%s\n" "${BLUE}" "${NC}"
         docker compose logs --tail=3 2>/dev/null | sed 's/^/  /' || echo "  Could not get logs"
     fi
     

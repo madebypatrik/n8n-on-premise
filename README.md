@@ -43,14 +43,16 @@
 git clone https://github.com/madebypatrik/n8n-docker.git
 cd n8n-docker
 
-# 2. Copy and configure environment variables
-cp .env.example .env
-# Edit .env file with your preferred settings
-# IMPORTANT: Change N8N_BASIC_AUTH_PASSWORD to a strong, unique password!
-
-# 3. Start n8n
-./scripts/start.sh
+# 2. Run the setup script for first-time configuration and start
+./setup.sh
 ```
+
+The `setup.sh` script automates the following for a smooth first-time experience:
+*   **Docker Check**: Ensures Docker Desktop is running before proceeding.
+*   **Environment Setup**: Creates your `.env` configuration file, if it doesn't exist, to manage your n8n settings.
+*   **Secure Passwords**: Automatically generates strong, unique passwords for n8n basic authentication and your PostgreSQL database.
+*   **Port Configuration**: Guides you through configuring the port n8n will run on.
+*   **First-Time Start**: Initiates n8n services, bringing your workflow automation platform online.
 
 ### Access n8n
 1. Open your browser and go to: `http://localhost:5678`
@@ -64,7 +66,7 @@ cp .env.example .env
 ```
 n8n-docker/
 ├── docker-compose.yml          # Main Docker Compose configuration
-├── .env.example               # Environment variables template
+├── .env                       # Your environment variables (created by setup.sh)
 ├── scripts/
 │   ├── start.sh              # Start n8n services
 │   ├── stop.sh               # Stop n8n services
@@ -117,14 +119,17 @@ n8n-docker/
 
 Key environment variables you can customize in `.env`:
 
-| Variable                 | Description                                      | Default                         |
-|--------------------------|--------------------------------------------------|---------------------------------|
-| `N8N_PORT`               | Port for n8n web interface                       | `5678`                          |
-| `N8N_BASIC_AUTH_USER`    | Basic authentication username                    | `admin`                         |
-| `N8N_BASIC_AUTH_PASSWORD`| Basic authentication password ( **CHANGE THIS** ) | `your-secure-password`          |
-| `POSTGRES_DB`            | PostgreSQL database name                         | `n8n`                           |
-| `POSTGRES_USER`          | PostgreSQL username                              | `n8n`                           |
-| `POSTGRES_PASSWORD`      | PostgreSQL password                              | *Generated (change for prod)*   |
+| Variable                               | Description                                                                                                                                                 | Default                         |
+|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| `N8N_PORT`                             | Port for n8n web interface                                                                                                                                  | `5678`                          |
+| `N8N_BASIC_AUTH_USER`                  | Basic authentication username                                                                                                                               | `admin`                         |
+| `N8N_BASIC_AUTH_PASSWORD`              | Basic authentication password ( **CHANGE THIS** )                                                                                                           | `your-secure-password`          |
+| `N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS`| Enforce correct permissions for n8n settings file. Recommended to be `true`.                                                                                | `true` (recommended)            |
+| `N8N_RUNNERS_ENABLED`                  | Enable task runners for n8n. Recommended to be `true` to avoid future deprecation issues.                                                                   | `true` (recommended)            |
+| `N8N_BLOCK_ENV_ACCESS_IN_NODE`         | Control environment variable access from the Code Node or expressions. Set to `false` if you need access, `true` for enhanced security.                   | `false` (if needed)             |
+| `POSTGRES_DB`                          | PostgreSQL database name                                                                                                                                    | `n8n`                           |
+| `POSTGRES_USER`                        | PostgreSQL username                                                                                                                                         | `n8n`                           |
+| `POSTGRES_PASSWORD`                    | PostgreSQL password                                                                                                                                         | *Generated (change for prod)*   |
 
 ### Docker Compose Services
 
